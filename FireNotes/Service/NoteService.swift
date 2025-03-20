@@ -51,4 +51,12 @@ class NoteService {
         let realm = try! Realm()
         return Array(realm.objects(Note.self))
     }
+    
+    func deleteAllDataFromRealm() {
+        let realm = try! Realm()
+        
+        try! realm.write {
+            realm.deleteAll()
+        }
+    }
 }

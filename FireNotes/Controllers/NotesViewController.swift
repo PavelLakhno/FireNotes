@@ -12,12 +12,40 @@ class NotesViewController: UIViewController {
     private var notes: [Note] = []
     private let tableView = UITableView()
     private let textField = UITextField()
+    
+    private let logoutButton: UIBarButtonItem = {
+        return UIBarButtonItem(title: "Logout", style: .plain, target: nil, action: nil)
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-//        loadNotes()
+        setupActions()
+        loadNotes()
         checkAuth()
+    }
+    
+    private func setupActions() {
+        logoutButton.target = self
+        logoutButton.action = #selector(logoutButtonTapped)
+    }
+    
+    @objc private func logoutButtonTapped() {
+        if AuthService.shared.signOut() {
+            NoteService.shared.deleteAllDataFromRealm()
+            let authVC = AuthViewController()
+            present(authVC, animated: true)
+//            navigationController?.popViewController(animated: true)
+        }
+        
+        
+//        do {
+//            try AuthService.shared.signOut()
+//            let authVC = AuthViewController()
+//            navigationController?.setViewControllers([authVC], animated: true)
+//        } catch {
+//            showAlert(message: error.localizedDescription)
+//        }
     }
     
     private func checkAuth() {
@@ -31,6 +59,7 @@ class NotesViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .white
         title = "Заметки"
+        navigationItem.rightBarButtonItem = logoutButton
 
         // Настройка текстового поля
         textField.placeholder = "Введите заметку"
@@ -70,12 +99,18 @@ class NotesViewController: UIViewController {
 
     private func loadNotes() {
         // Загружаем заметки из Realm
-        notes = NoteService.shared.loadNotesFromRealm()
+//        notes = NoteService.shared.loadNotesFromRealm()
 
         // Загружаем заметки из Firestore
         NoteService.shared.loadNotesFromFirestore { [weak self] firestoreNotes in
-            self?.notes = firestoreNotes
-            self?.tableView.reloadData()
+            
+            DispatchQueue.global().async {
+                self?.notes = firestoreNotes
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
+            }
+            
         }
     }
 

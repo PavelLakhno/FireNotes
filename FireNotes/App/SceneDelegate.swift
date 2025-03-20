@@ -23,9 +23,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let navController = UINavigationController(rootViewController: NotesViewController())
         window?.rootViewController = navController
         window?.makeKeyAndVisible()
+    
     }
-
-
 
 }
 
